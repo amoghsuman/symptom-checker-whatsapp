@@ -12,7 +12,7 @@ def symptom_checker():
     resp = MessagingResponse()
     msg = resp.message()
 
-    if incoming_msg == "restart":
+    if incoming_msg in ["restart", "*start", "start", "hi", "hello"]:
         user_sessions[phone] = {"step": "awaiting_gender"}
         msg.body("Session reset. What is your gender? (male/female)")
         return str(resp)
