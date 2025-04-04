@@ -12,16 +12,19 @@ def symptom_checker():
     resp = MessagingResponse()
     msg = resp.message()
 
-    # 📍 Debug logs (optional - shows in Render logs)
+    # Debug logs (optional - shows in Render logs)
     print(f"[{phone}] Message: {incoming_msg}")
 
-    # ✅ Handle restart/reset logic before anything else
+    # Handle restart/reset logic before anything else
     if incoming_msg in ["restart", "*start", "start", "hi", "hello"]:
-        user_sessions[phone] = {"step": "awaiting_gender"}
-        msg.body("Session reset. What is your gender? (male/female)")
-        return str(resp)
+    session = {
+        "step": "awaiting_gender"
+    }
+    msg.body("Welcome to the Symptom Checker Bot.\nWhat is your gender? (male/female)")
+    user_sessions[phone] = session
+    return str(resp)
 
-    # ✅ Load session only after restart check
+    # Load session only after restart check
     session = user_sessions.get(phone, {"step": "awaiting_gender"})
 
     print(f"[{phone}] Current step: {session.get('step')}")
