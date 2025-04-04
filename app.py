@@ -17,12 +17,12 @@ def symptom_checker():
 
     # Handle restart/reset logic before anything else
     if incoming_msg in ["restart", "*start", "start", "hi", "hello"]:
-    session = {
-        "step": "awaiting_gender"
-    }
-    msg.body("Welcome to the Symptom Checker Bot.\nWhat is your gender? (male/female)")
-    user_sessions[phone] = session
-    return str(resp)
+        session = {
+            "step": "awaiting_gender"
+        }
+        msg.body("Welcome to the Symptom Checker Bot.\nWhat is your gender? (male/female)")
+        user_sessions[phone] = session
+        return str(resp)
 
     # Load session only after restart check
     session = user_sessions.get(phone, {"step": "awaiting_gender"})
