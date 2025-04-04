@@ -1,7 +1,11 @@
+import os
 import requests
+from dotenv import load_dotenv
 
-APP_ID = 'YOUR_APP_ID'   # Replace later
-APP_KEY = 'YOUR_APP_KEY' # Replace later
+load_dotenv()  # Load variables from .env file
+
+APP_ID = os.getenv('INFERMEDICA_APP_ID')
+APP_KEY = os.getenv('INFERMEDICA_APP_KEY')
 
 headers = {
     'App-Id': APP_ID,
