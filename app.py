@@ -12,12 +12,19 @@ def symptom_checker():
     resp = MessagingResponse()
     msg = resp.message()
 
+    # 📍 Debug logs (optional - shows in Render logs)
+    print(f"[{phone}] Message: {incoming_msg}")
+
+    # ✅ Handle restart/reset logic before anything else
     if incoming_msg in ["restart", "*start", "start", "hi", "hello"]:
         user_sessions[phone] = {"step": "awaiting_gender"}
         msg.body("Session reset. What is your gender? (male/female)")
         return str(resp)
 
+    # ✅ Load session only after restart check
     session = user_sessions.get(phone, {"step": "awaiting_gender"})
+
+    print(f"[{phone}] Current step: {session.get('step')}")
 
     # Step 1: Gender
     if session["step"] == "awaiting_gender":
@@ -60,7 +67,7 @@ def symptom_checker():
         else:
             msg.body("I couldn't recognize that symptom. Please try another one.")
 
-    # Step 4: Handle follow-up questions
+    # Step 4: Follow-up question flow
     elif session["step"] == "asking_question":
         answer_map = {
             "yes": "present",
@@ -70,7 +77,7 @@ def symptom_checker():
         }
 
         if session["question"]["type"] != "single":
-            # Skip multi-option or open-ended questions
+            # Skip multi-choice or open-ended question
             for item in session["question"]["items"]:
                 session["evidence"].append({
                     "id": item["id"],
@@ -87,19 +94,20 @@ def symptom_checker():
             user_sessions[phone] = session
             return str(resp)
 
-        # Re-run diagnosis
+        # Run next diagnosis step
         diagnosis = run_diagnosis(session["evidence"], session["gender"], session["age"])
         session["question"] = diagnosis.get("question")
         session["conditions"] = diagnosis.get("conditions")
         session["question_count"] += 1
 
+        # Stop after 25 questions or when no more questions left
         if not session["question"] or session["question_count"] >= 25:
             msg.body(format_conditions(session["conditions"]))
             session = {"step": "awaiting_gender"}
         elif session["question"]["type"] == "single":
             msg.body(f"{session['question']['text']} (yes/no/don't know)")
         else:
-            # Skip non-yes/no and continue
+            # Skip and auto-answer unknown for non-yes/no questions
             for item in session["question"]["items"]:
                 session["evidence"].append({
                     "id": item["id"],
@@ -121,7 +129,7 @@ def format_conditions(conditions):
     if not conditions:
         return "Sorry, I couldn't determine your condition. Please consult a doctor."
     reply = "🧠 Based on your answers, you might have:\n\n"
-    for cond in conditions[:3]:  # Top 3
+    for cond in conditions[:3]:  # Top 3 results
         name = cond['name']
         prob = round(cond['probability'] * 100, 1)
         reply += f"- {name} ({prob}%)\n"
